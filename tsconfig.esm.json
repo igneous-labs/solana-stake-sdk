@@ -35,8 +35,8 @@
     "lib": ["ES6", "DOM"],
     "baseUrl": "./src",
     "paths": {
-      "@/stake/*": ["./*"],
-      "@/stake": ["./index.ts"],
+      "@/*": ["./*"],
+      "@": ["./index.ts"],
       "@/tests/*": ["../tests/*"]
     }
   },
