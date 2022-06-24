@@ -4,6 +4,12 @@ import { StakeAccount } from "@/account";
 
 export type StakeState = "inactive" | "activating" | "active" | "deactivating";
 
+/**
+ * Determins the current state of a stake account given the current epoch
+ * @param stakeAccount
+ * @param currentEpoch
+ * @returns `stakeAccount`'s `StakeState`
+ */
 export function stakeAccountState(
   { type, info: { stake } }: StakeAccount,
   currentEpoch: BN,

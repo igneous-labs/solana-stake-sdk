@@ -96,7 +96,7 @@ export class StakeAccountDoesNotExistError extends Error {
  * @param commitment
  * @returns
  * @throws StakeAccountDoesNotExistError if stake account does not exist
- * @throws
+ * @throws ParseStakeAccountError if unable to parse fetched account data
  */
 export async function getStakeAccount(
   connection: Connection,
