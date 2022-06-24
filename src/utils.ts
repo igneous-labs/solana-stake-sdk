@@ -3,10 +3,13 @@ import { create } from "superstruct";
 
 import { StakeAccount } from "@/account";
 
+export class ParseStakeAccountError extends Error {}
+
 /**
- *
- * @param account raw accountinfo returned by getParsedProgramAccounts
- * @returns the parsed StakeAccount, null if unable to parse
+ * Converts an `AccountInfo<ParsedAccountData>` to an `AccountInfo<StakeAccount>`
+ * @param account raw accountinfo returned by getParsedProgramAccounts or getParsedAccountInfo
+ * @returns the parsed StakeAccount
+ * @throws ParseStakeAccountError if `account` is AccountInfo<Buffer> or if unable to parse account data
  */
 export function parsedAccountInfoToStakeAccount({
   executable,
@@ -16,13 +19,19 @@ export function parsedAccountInfoToStakeAccount({
   rentEpoch,
 }: AccountInfo<Buffer | ParsedAccountData>): AccountInfo<StakeAccount> {
   if (!("parsed" in data)) {
-    throw new Error("Raw AccountInfo, not parsed");
+    throw new ParseStakeAccountError(
+      "Raw AccountInfo<Buffer>, data not parsed",
+    );
   }
-  return {
-    executable,
-    owner,
-    lamports,
-    data: create(data.parsed, StakeAccount),
-    rentEpoch,
-  };
+  try {
+    return {
+      executable,
+      owner,
+      lamports,
+      data: create(data.parsed, StakeAccount),
+      rentEpoch,
+    };
+  } catch (e) {
+    throw new ParseStakeAccountError((e as Error).message);
+  }
 }

@@ -1,17 +1,27 @@
+/* eslint-disable max-classes-per-file */
+
 import {
+  AccountInfo,
+  Commitment,
   Connection,
   GetProgramAccountsFilter,
   PublicKey,
   StakeProgram,
 } from "@solana/web3.js";
 
-import { KeyedStakeAccountInfo } from "@/account";
+import { KeyedStakeAccountInfo, StakeAccount } from "@/account";
 import { parsedAccountInfoToStakeAccount } from "@/utils";
 
 export type StakeAccAuthorityArgs = {
   staker?: PublicKey;
   withdrawer?: PublicKey;
 };
+
+export class InvalidStakeAccAuthorityArgsError extends Error {
+  constructor() {
+    super("At least one of staker or withdrawer must be provided");
+  }
+}
 
 const META_AUTHORIZED_STAKER_OFFSET = 12;
 const META_AUTHORIZED_WITHDRAWER_OFFSET = 44;
@@ -22,10 +32,12 @@ const META_AUTHORIZED_WITHDRAWER_OFFSET = 44;
  * @param connection
  * @param stakeAccAuthorityArgs
  * @returns
+ * @throws `InvalidStakeAccAuthorityArgsError` if stakeAccAuthorityArgs does not container either staker or withdrawer
  */
 export async function findAllStakeAccountsByAuth(
   connection: Connection,
   { staker, withdrawer }: StakeAccAuthorityArgs,
+  commitment?: Commitment,
 ): Promise<KeyedStakeAccountInfo[]> {
   const filters: GetProgramAccountsFilter[] = [];
   if (staker) {
@@ -45,11 +57,12 @@ export async function findAllStakeAccountsByAuth(
     });
   }
   if (filters.length === 0) {
-    return [];
+    throw new InvalidStakeAccAuthorityArgsError();
   }
   const parsedStakeAccounts = await connection.getParsedProgramAccounts(
     StakeProgram.programId,
     {
+      commitment,
       filters,
     },
   );
@@ -68,4 +81,32 @@ export async function findAllStakeAccountsByAuth(
       }
     })
     .filter((maybeAcc) => Boolean(maybeAcc)) as KeyedStakeAccountInfo[];
+}
+
+export class StakeAccountDoesNotExistError extends Error {
+  constructor(publicKey: PublicKey) {
+    super(`${publicKey.toString()} stake account does not exist`);
+  }
+}
+
+/**
+ * Fetches a stake account from on-chain
+ * @param connection
+ * @param publicKey
+ * @param commitment
+ * @returns
+ * @throws StakeAccountDoesNotExistError if stake account does not exist
+ * @throws
+ */
+export async function getStakeAccount(
+  connection: Connection,
+  publicKey: PublicKey,
+  commitment?: Commitment,
+): Promise<AccountInfo<StakeAccount>> {
+  const { value } = await connection.getParsedAccountInfo(
+    publicKey,
+    commitment,
+  );
+  if (!value) throw new StakeAccountDoesNotExistError(publicKey);
+  return parsedAccountInfoToStakeAccount(value);
 }
