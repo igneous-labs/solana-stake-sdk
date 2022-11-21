@@ -24,10 +24,6 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "browser": "./dist/esbuild/browser.js",
-  "bin": {
-    "cli": "./dist/esbuild/cli.js"
-  },
   "files": [
     "dist",
     "src"
