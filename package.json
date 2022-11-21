@@ -1,6 +1,6 @@
 {
   "name": "@soceanfi/solana-stake-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Solana native staking program Typescript SDK",
   "author": "socean finance <socean@socean.fi>",
   "repository": "https://github.com/igneous-labs/solana-stake-sdk",
