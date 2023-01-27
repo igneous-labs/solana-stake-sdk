@@ -1,7 +1,7 @@
 import { AccountInfo, ParsedAccountData } from "@solana/web3.js";
 import { create } from "superstruct";
 
-import { StakeAccount } from "@/account";
+import { StakeAccount, StakeMeta } from "@/account";
 
 export class ParseStakeAccountError extends Error {}
 
@@ -34,4 +34,21 @@ export function parsedAccountInfoToStakeAccount({
   } catch (e) {
     throw new ParseStakeAccountError((e as Error).message);
   }
+}
+
+export interface IsLockupInForceArgs {
+  meta: StakeMeta;
+  currEpoch: number;
+  currUnixTimestamp: number;
+}
+
+export function isLockupInForce({
+  meta,
+  currEpoch,
+  currUnixTimestamp,
+}: IsLockupInForceArgs): boolean {
+  return (
+    meta.lockup.unixTimestamp > currUnixTimestamp ||
+    meta.lockup.epoch > currEpoch
+  );
 }
